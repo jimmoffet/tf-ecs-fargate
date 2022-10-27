@@ -22,7 +22,7 @@ resource "aws_alb_target_group" "main" {
 
   health_check {
     healthy_threshold   = "3"
-    interval            = "30"
+    interval            = "300"
     protocol            = "HTTP"
     matcher             = "200"
     timeout             = "3"
@@ -43,31 +43,50 @@ resource "aws_alb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
-
-    redirect {
-      port        = 443
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    target_group_arn = aws_alb_target_group.main.id
+    type             = "forward"
   }
+
+  # default_action {
+  #   type = "redirect"
+  #   redirect {
+  #     port        = 443
+  #     protocol    = "HTTPS"
+  #     status_code = "HTTP_301"
+  #   }
+  # }
 }
 
 # Redirect traffic to target group
-resource "aws_alb_listener" "https" {
-    load_balancer_arn = aws_lb.main.id
-    port              = 443
-    protocol          = "HTTPS"
+# resource "aws_alb_listener" "https" {
+#     load_balancer_arn = aws_lb.main.id
+#     port              = 443
+#     protocol          = "HTTPS"
 
-    ssl_policy        = "ELBSecurityPolicy-2016-08"
-    certificate_arn   = var.alb_tls_cert_arn
+#     ssl_policy        = "ELBSecurityPolicy-2016-08"
+#     certificate_arn   = var.alb_tls_cert_arn
 
-    default_action {
-        target_group_arn = aws_alb_target_group.main.id
-        type             = "forward"
-    }
-}
+#     default_action {
+#         target_group_arn = aws_alb_target_group.main.id
+#         type             = "forward"
+#     }
+# }
 
 output "aws_alb_target_group_arn" {
   value = aws_alb_target_group.main.arn
+}
+
+output "lb_id" {
+  description = "The ID and ARN of the load balancer we created."
+  value       = concat(aws_lb.main.*.id, [""])[0]
+}
+
+output "lb_arn" {
+  description = "The ID and ARN of the load balancer we created."
+  value       = concat(aws_lb.main.*.arn, [""])[0]
+}
+
+output "lb_dns_name" {
+  description = "The DNS name of the load balancer."
+  value       = concat(aws_lb.main.*.dns_name, [""])[0]
 }

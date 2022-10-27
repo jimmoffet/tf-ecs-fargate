@@ -9,13 +9,13 @@ variable "environment" {
 
 variable "region" {
   description = "the AWS region in which resources are created, you must set the availability_zones variable as well if you define this value to something other than the default"
-  default     = "eu-central-1"
+  default     = "us-west-2"
 }
 
 variable "aws-region" {
   type        = string
   description = "AWS region to launch servers."
-  default     = "eu-central-1"
+  default     = "us-west-2"
 }
 
 variable "aws-access-key" {
@@ -28,13 +28,13 @@ variable "aws-secret-key" {
 
 variable "application-secrets" {
   description = "A map of secrets that is passed into the application. Formatted like ENV_VAR = VALUE"
-  type        = map
+  type        = map(any)
 }
 
 
 variable "availability_zones" {
   description = "a comma-separated list of availability zones, defaults to all AZ of the region, if set to something other than the defaults, both private_subnets and public_subnets have to be defined as well"
-  default     = ["eu-central-1a", "eu-central-1b", "eu-central-1c"]
+  default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
 variable "cidr" {
@@ -54,12 +54,12 @@ variable "public_subnets" {
 
 variable "service_desired_count" {
   description = "Number of tasks running in parallel"
-  default     = 2
+  default     = 0
 }
 
 variable "container_port" {
   description = "The port where the Docker is exposed"
-  default     = 8000
+  default     = 80
 }
 
 variable "container_cpu" {
@@ -72,9 +72,13 @@ variable "container_memory" {
   default     = 512
 }
 
+# variable "my_container_image" {
+#   description = "Docker image to be launched"
+# }
+
 variable "health_check_path" {
   description = "Http path for task health check"
-  default     = "/health"
+  default     = "/"
 }
 
 variable "tsl_certificate_arn" {

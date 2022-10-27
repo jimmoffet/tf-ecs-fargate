@@ -38,7 +38,7 @@ resource "aws_security_group" "ecs_tasks" {
 
   ingress {
     protocol         = "tcp"
-    from_port        = var.container_port
+    from_port        = 80
     to_port          = var.container_port
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]

@@ -1,32 +1,46 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
 provider "aws" {
   access_key = var.aws-access-key
   secret_key = var.aws-secret-key
   region     = var.aws-region
-  version    = "~> 2.0"
 }
 
 terraform {
-  backend "s3" {
-    bucket  = "terraform-backend-store"
-    encrypt = true
-    key     = "terraform.tfstate"
-    region  = "eu-central-1"
-    # dynamodb_table = "terraform-state-lock-dynamo" - uncomment this line once the terraform-state-lock-dynamo has been terraformed
+  backend "local" {
+    path = "terraform.tfstate"
   }
+  # backend "s3" {
+  #   bucket  = "terraform-backend-store"
+  #   encrypt = true
+  #   key     = "terraform.tfstate"
+  #   region  = "us-west-2"
+  #   # dynamodb_table = "terraform-state-lock-dynamo" - uncomment this line once the terraform-state-lock-dynamo has been terraformed
+  # }
 }
 
-resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
-  name           = "terraform-state-lock-dynamo"
-  hash_key       = "LockID"
-  read_capacity  = 20
-  write_capacity = 20
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-  tags = {
-    Name = "DynamoDB Terraform State Lock Table"
-  }
+# resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
+#   name           = "terraform-state-lock-dynamo"
+#   hash_key       = "LockID"
+#   read_capacity  = 20
+#   write_capacity = 20
+#   attribute {
+#     name = "LockID"
+#     type = "S"
+#   }
+#   tags = {
+#     Name = "DynamoDB Terraform State Lock Table"
+#   }
+# }
+
+data "aws_availability_zones" "available" {
 }
 
 module "vpc" {
@@ -35,7 +49,7 @@ module "vpc" {
   cidr               = var.cidr
   private_subnets    = var.private_subnets
   public_subnets     = var.public_subnets
-  availability_zones = var.availability_zones
+  availability_zones = data.aws_availability_zones.available.names[0]
   environment        = var.environment
 }
 
@@ -72,6 +86,12 @@ module "secrets" {
   application-secrets = var.application-secrets
 }
 
+module "my-container-image" {
+  source      = "github.com/mathspace/terraform-aws-ecr-docker-image?ref=v4.0"
+  image_name  = "my-container-image"
+  source_path = "ecs/src"
+}
+
 module "ecs" {
   source                      = "./ecs"
   name                        = var.name
@@ -80,6 +100,7 @@ module "ecs" {
   subnets                     = module.vpc.private_subnets
   aws_alb_target_group_arn    = module.alb.aws_alb_target_group_arn
   ecs_service_security_groups = [module.security_groups.ecs_tasks]
+  my_container_image          = "${module.my-container-image.repository_url}:${module.my-container-image.tag}"
   container_port              = var.container_port
   container_cpu               = var.container_cpu
   container_memory            = var.container_memory
@@ -90,8 +111,12 @@ module "ecs" {
     { name = "PORT",
     value = var.container_port }
   ]
-  container_secrets      = module.secrets.secrets_map
-  aws_ecr_repository_url = module.ecr.aws_ecr_repository_url
-  container_secrets_arns = module.secrets.application_secrets_arn
+  container_secrets = module.secrets.secrets_map
+  # container_secrets_arns = module.secrets.application_secrets_arn
+}
+
+output "my_container_image" {
+  description = "The ID and ARN of the load balancer we created."
+  value       = "${module.my-container-image.repository_url}:${module.my-container-image.tag}"
 }
 

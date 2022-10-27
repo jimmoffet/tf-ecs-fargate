@@ -25,42 +25,42 @@ resource "aws_nat_gateway" "main" {
   depends_on    = [aws_internet_gateway.main]
 
   tags = {
-    Name        = "${var.name}-nat-${var.environment}-${format("%03d", count.index+1)}"
+    Name        = "${var.name}-nat-${var.environment}-${format("%03d", count.index + 1)}"
     Environment = var.environment
   }
 }
 
 resource "aws_eip" "nat" {
   count = length(var.private_subnets)
-  vpc = true
+  vpc   = true
 
   tags = {
-    Name        = "${var.name}-eip-${var.environment}-${format("%03d", count.index+1)}"
+    Name        = "${var.name}-eip-${var.environment}-${format("%03d", count.index + 1)}"
     Environment = var.environment
   }
 }
 
 resource "aws_subnet" "private" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = element(var.private_subnets, count.index)
-  availability_zone = element(var.availability_zones, count.index)
-  count             = length(var.private_subnets)
+  vpc_id     = aws_vpc.main.id
+  cidr_block = element(var.private_subnets, count.index)
+  # availability_zone = element(var.availability_zones, count.index)
+  count = length(var.private_subnets)
 
   tags = {
-    Name        = "${var.name}-private-subnet-${var.environment}-${format("%03d", count.index+1)}"
+    Name        = "${var.name}-private-subnet-${var.environment}-${format("%03d", count.index + 1)}"
     Environment = var.environment
   }
 }
 
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = element(var.public_subnets, count.index)
-  availability_zone       = element(var.availability_zones, count.index)
+  vpc_id     = aws_vpc.main.id
+  cidr_block = element(var.public_subnets, count.index)
+  # availability_zone       = element(var.availability_zones, count.index)
   count                   = length(var.public_subnets)
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "${var.name}-public-subnet-${var.environment}-${format("%03d", count.index+1)}"
+    Name        = "${var.name}-public-subnet-${var.environment}-${format("%03d", count.index + 1)}"
     Environment = var.environment
   }
 }
@@ -85,7 +85,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name        = "${var.name}-routing-table-private-${format("%03d", count.index+1)}"
+    Name        = "${var.name}-routing-table-private-${format("%03d", count.index + 1)}"
     Environment = var.environment
   }
 }
@@ -150,14 +150,21 @@ resource "aws_iam_role_policy" "vpc-flow-logs-policy" {
   "Statement": [
     {
       "Action": [
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:PutMetricData",
+        "ec2:DescribeTags",
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents",
+        "logs:PutSubscriptionFilter",
         "logs:DescribeLogGroups",
         "logs:DescribeLogStreams"
       ],
       "Effect": "Allow",
-      "Resource": "*"
+      "Resource": [
+        "arn:aws:logs:*:*:*"
+      ]
     }
   ]
 }

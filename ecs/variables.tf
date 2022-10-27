@@ -30,7 +30,7 @@ variable "container_memory" {
   description = "The amount (in MiB) of memory used by the task"
 }
 
-variable "container_image" {
+variable "my_container_image" {
   description = "Docker image to be launched"
 }
 
@@ -44,14 +44,14 @@ variable "service_desired_count" {
 
 variable "container_environment" {
   description = "The container environmnent variables"
-  type        = list
+  type        = list(any)
 }
 
 variable "container_secrets" {
   description = "The container secret environmnent variables"
-  type        = list
+  type        = list(any)
 }
 
-variable "container_secrets_arns" {
-  description = "ARN for secrets"
-}
+# variable "container_secrets_arns" {
+#   description = "ARN for secrets"
+# }

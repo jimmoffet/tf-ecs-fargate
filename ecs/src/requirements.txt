@@ -1,0 +1,3 @@
+requests
+whisper @ git+https://github.com/openai/whisper.git
+Flask==2.0.2

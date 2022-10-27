@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  fargate-demo:
+    container_name: fargate-demo
+    image: dev-src-fargate-image
+    build:
+      context: ecs/src/.
+      dockerfile: Dockerfile
+    command: pwd
+    ports:
+      - 80:80
+    expose:
+      - "80"

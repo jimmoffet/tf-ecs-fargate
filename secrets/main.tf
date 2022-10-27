@@ -17,7 +17,7 @@ resource "aws_secretsmanager_secret_version" "application_secrets_values" {
 }
 
 locals {
-  secrets = zipmap(keys(var.application-secrets), aws_secretsmanager_secret_version.solaris_broker_application_secrets_values.*.arn)
+  secrets = var.application-secrets
 
   secretMap = [for secretKey in keys(var.application-secrets) : {
     name      = secretKey
@@ -27,9 +27,9 @@ locals {
   ]
 }
 
-output "application_secrets_arn" {
-  value = aws_secretsmanager_secret_version.solaris_broker_application_secrets_values.*.arn
-}
+# output "application_secrets_arn" {
+#   value = aws_secretsmanager_secret_version.solaris_broker_application_secrets_values.*.arn
+# }
 
 output "secrets_map" {
   value = local.secretMap
