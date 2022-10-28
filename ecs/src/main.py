@@ -25,9 +25,10 @@ def transcribe(url):
     urllib.request.urlretrieve(url, filename)
     logger.debug(f"Hello world - this is fargate task endpoint / downloaded")
 
-    # model = whisper.load_model("base.en")
-    # with open('base-en.pickle', 'wb') as handle:
-    #     pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if not os.path.exists("base-en.pickle"):
+        model = whisper.load_model("base.en")
+        with open('base-en.pickle', 'wb') as handle:
+            pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open('base-en.pickle', 'rb') as handle:
         model = pickle.load(handle)
