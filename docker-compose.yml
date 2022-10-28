@@ -7,7 +7,7 @@ services:
     build:
       context: ecs/src/.
       dockerfile: Dockerfile
-    command: pwd
+    command: "https://github.com/AssemblyAI-Examples/audio-intelligence-dashboard/raw/master/gettysburg10.wav"
     ports:
       - 80:80
     expose:

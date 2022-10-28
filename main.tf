@@ -93,18 +93,19 @@ module "my-container-image" {
 }
 
 module "ecs" {
-  source                      = "./ecs"
-  name                        = var.name
-  environment                 = var.environment
-  region                      = var.aws-region
-  subnets                     = module.vpc.private_subnets
-  aws_alb_target_group_arn    = module.alb.aws_alb_target_group_arn
-  ecs_service_security_groups = [module.security_groups.ecs_tasks]
-  my_container_image          = "${module.my-container-image.repository_url}:${module.my-container-image.tag}"
-  container_port              = var.container_port
-  container_cpu               = var.container_cpu
-  container_memory            = var.container_memory
-  service_desired_count       = var.service_desired_count
+  source                        = "./ecs"
+  name                          = var.name
+  environment                   = var.environment
+  region                        = var.aws-region
+  subnets                       = module.vpc.private_subnets
+  aws_alb_target_group_arn      = module.alb.aws_alb_target_group_arn
+  ecs_service_security_groups   = [module.security_groups.ecs_tasks]
+  my_container_image            = "${module.my-container-image.repository_url}:${module.my-container-image.tag}"
+  container_port                = var.container_port
+  container_cpu                 = var.container_cpu
+  container_memory              = var.container_memory
+  service_desired_count         = var.service_desired_count
+  whisper_incoming_audio_bucket = var.whisper_incoming_audio_bucket
   container_environment = [
     { name = "LOG_LEVEL",
     value = "DEBUG" },
@@ -113,6 +114,12 @@ module "ecs" {
   ]
   container_secrets = module.secrets.secrets_map
   # container_secrets_arns = module.secrets.application_secrets_arn
+}
+
+module "s3" {
+  source                        = "./s3"
+  whisper_incoming_audio_bucket = var.whisper_incoming_audio_bucket
+  environment                   = var.environment
 }
 
 output "my_container_image" {

@@ -55,3 +55,7 @@ variable "container_secrets" {
 # variable "container_secrets_arns" {
 #   description = "ARN for secrets"
 # }
+
+variable "whisper_incoming_audio_bucket" {
+  description = "The name of the S3 bucket where incoming audio files are stored"
+}

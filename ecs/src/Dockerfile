@@ -3,6 +3,6 @@ RUN apt-get update && apt-get install -y git ffmpeg
 RUN mkdir /src
 ADD requirements.txt /src/requirements.txt
 RUN python3.9 -m pip install -r /src/requirements.txt
-ADD main.py /src/main.py
+ADD . /src
 WORKDIR /src
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-m", "main"]

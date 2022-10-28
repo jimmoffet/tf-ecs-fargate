@@ -95,6 +95,27 @@ resource "aws_iam_policy" "dynamodb" {
                 "ssmmessages:OpenDataChannel"
             ],
             "Resource": "*"
+        },
+        {
+         "Action": [
+             "s3:ListBucket",
+             "s3:GetBucketLocation"
+           ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::${var.whisper_incoming_audio_bucket}",
+          "Sid": "S3List"
+        },
+        {
+        "Action": [
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectAcl",
+            "s3:DeleteObject"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::${var.whisper_incoming_audio_bucket}/*",
+          "Sid": "S3Use"
         }
     ]
 }
@@ -225,9 +246,9 @@ resource "aws_ecs_service" "main" {
   # we ignore task_definition changes as the revision changes on deploy
   # of a new version of the application
   # desired_count is ignored as it can change due to autoscaling policy
-  lifecycle {
-    ignore_changes = [task_definition, desired_count]
-  }
+  # lifecycle {
+  #   ignore_changes = [task_definition, desired_count]
+  # }
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {

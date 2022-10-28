@@ -72,10 +72,6 @@ variable "container_memory" {
   default     = 512
 }
 
-# variable "my_container_image" {
-#   description = "Docker image to be launched"
-# }
-
 variable "health_check_path" {
   description = "Http path for task health check"
   default     = "/"
@@ -83,4 +79,8 @@ variable "health_check_path" {
 
 variable "tsl_certificate_arn" {
   description = "The ARN of the certificate that the ALB uses for https"
+}
+
+variable "whisper_incoming_audio_bucket" {
+  description = "The name of the S3 bucket where incoming audio files are stored"
 }

@@ -85,3 +85,8 @@ Need to set `enable_execute_command = true` in ecs_service resource, and add pol
 
 ### Local testing of task container
 docker compose up --build
+
+### Notes
+https://github.com/pyannote/pyannote-audio/pull/1098
+https://colab.research.google.com/drive/12W6bR-C6NIEjAML19JubtzHPIlVxdaUq?usp=sharing
+https://github.com/openai/whisper/discussions/264
