@@ -25,6 +25,8 @@ def transcribe(url):
     urllib.request.urlretrieve(url, filename)
     logger.debug(f"Hello world - this is fargate task endpoint / downloaded")
 
+    # SAVE AUDIO FILE TO S3 IN CASE WE NEED TO RETRY
+
     if not os.path.exists("base-en.pickle"):
         logger.info(f"pickled model not found")
         model_object = whisper.load_model("base.en")
@@ -46,6 +48,10 @@ def transcribe(url):
     text_file.write(output_str)
     logger.debug(f"wrote output file")
     text_file.close()
+
+    # SAVE TXT TO S3 AND PASS VIA SNS MSG TO OUTPUT LAMBDA
+
+    # we'll need an input lambda to receive a POST with audio url, which will send the audio url and a unique id to the fargate task, fargate creates the txt file with the id, lambda returns the id to the requester. The requester can then poll the lambda with the id to get the txt file once it becomes available. Fargate could write an error to the beginning of the file if it fails, and the lambda could check for that and return an error to the requester.
 
     return json.dumps(result, indent=4)
 
