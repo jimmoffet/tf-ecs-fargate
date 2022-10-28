@@ -14,7 +14,7 @@ logger = logging.getLogger()
 
 app = Flask(__name__)
 
-url = "https://github.com/AssemblyAI-Examples/audio-intelligence-dashboard/raw/master/gettysburg10.wav"
+# url = "https://github.com/AssemblyAI-Examples/audio-intelligence-dashboard/raw/master/gettysburg10.wav"
 
 
 @app.route('/')
@@ -26,19 +26,25 @@ def transcribe(url):
     logger.debug(f"Hello world - this is fargate task endpoint / downloaded")
 
     if not os.path.exists("base-en.pickle"):
-        model = whisper.load_model("base.en")
+        logger.info(f"pickled model not found")
+        model_object = whisper.load_model("base.en")
         with open('base-en.pickle', 'wb') as handle:
-            pickle.dump(model, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(model_object, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open('base-en.pickle', 'rb') as handle:
+        logger.info(f"loading model from file")
         model = pickle.load(handle)
 
     result = model.transcribe(filename)
     logger.debug(f"dict result is {result}")
 
     text_file = open("output.txt", "w")
+    output_str = ""
     for segment in result["segments"]:
-        text_file.write(segment["text"])
+        logger.debug(f"saving a segment to output file")
+        output_str += segment["text"]+"\n>"
+    text_file.write(output_str)
+    logger.debug(f"wrote output file")
     text_file.close()
 
     return json.dumps(result, indent=4)
