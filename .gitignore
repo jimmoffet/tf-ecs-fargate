@@ -3,3 +3,9 @@
 terraform.tfstate
 terraform.tfstate.backup
 secrets.tfvars
+
+venv/
+**/venv/
+**/*.pickle
+**/*.wav
+**/*.env

@@ -30,13 +30,13 @@ variable "container_memory" {
   description = "The amount (in MiB) of memory used by the task"
 }
 
-variable "container_image" {
+variable "my_container_image" {
   description = "Docker image to be launched"
 }
 
-variable "aws_alb_target_group_arn" {
-  description = "ARN of the alb target group"
-}
+# variable "aws_alb_target_group_arn" {
+#   description = "ARN of the alb target group"
+# }
 
 variable "service_desired_count" {
   description = "Number of services running in parallel"
@@ -44,14 +44,22 @@ variable "service_desired_count" {
 
 variable "container_environment" {
   description = "The container environmnent variables"
-  type        = list
+  type        = list(any)
 }
 
 variable "container_secrets" {
   description = "The container secret environmnent variables"
-  type        = list
+  type        = list(any)
 }
 
-variable "container_secrets_arns" {
-  description = "ARN for secrets"
+# variable "container_secrets_arns" {
+#   description = "ARN for secrets"
+# }
+
+variable "whisper_incoming_audio_bucket" {
+  description = "The name of the S3 bucket where incoming audio files are stored"
+}
+
+variable "whisper_outgoing_text_bucket" {
+  description = "The name of the S3 bucket where outgoing text files are stored"
 }

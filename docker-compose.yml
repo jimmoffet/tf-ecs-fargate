@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  fargate-demo:
+    container_name: fargate-demo
+    image: dev-src-fargate-image
+    environment:
+      - PORT=${PORT}
+      - ENV_NAME=${ENV_NAME}
+      - WHISPER_INCOMING_AUDIO_BUCKET=${WHISPER_INCOMING_AUDIO_BUCKET}
+      - WHISPER_OUTGOING_TEXT_BUCKET=${WHISPER_OUTGOING_TEXT_BUCKET}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_ACCESS_KEY_ID=${S3_ONLY_AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${S3_ONLY_AWS_SECRET_ACCESS_KEY}
+    build:
+      context: ecs/src/.
+      dockerfile: Dockerfile
+    command: ${DOCKER_COMMAND}
+    ports:
+      - 80:80
+    expose:
+      - "80"
