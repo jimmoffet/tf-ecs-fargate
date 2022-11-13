@@ -15,14 +15,18 @@
 set -euo pipefail
 
 NAME="$1"
-TASK_ARG="${2:-}"
+URL="$2"
+JOB_ID="$3"
+
+echo $URL
+echo $JOB_ID
 
 # To pass an argument to the task
 # Note: the "command" override acts to append arguments to the Dockerfile ENTRYPOINT
-if [[ -z "$TASK_ARG" ]]; then
+if [[ -z "$URL" ]]; then
   command_override="[]"
 else
-  command_override="[\"$TASK_ARG\"]"
+  command_override="[\"$URL\", \"$JOB_ID\"]"
 fi
 overrides='{
   "containerOverrides": [{
@@ -30,6 +34,9 @@ overrides='{
     "command": '"$command_override"'
   }]
 }'
+
+echo $command_override
+echo $overrides
 
 # Fetch configuration from the service, in order to run-task with same configuration
 describe_service_response="$(aws ecs describe-services \
@@ -83,5 +90,3 @@ echo "Task ARN: $task_arn"
 echo "Task ID: $task_id"
 # Use --start to workaround missing streams issue
 awslogs get --start 12h --no-group --no-stream /ecs/$NAME-task-dev ecs/$NAME-container-dev/"$task_id"
-
-# aws ecs execute-command --region us-west-2 --cluster $NAME-cluster-dev --task fee34e07568e4592a6b1fc43e1ad657f --container $NAME-container-dev --command "/bin/bash" --interactive

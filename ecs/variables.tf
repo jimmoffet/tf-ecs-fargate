@@ -34,9 +34,9 @@ variable "my_container_image" {
   description = "Docker image to be launched"
 }
 
-variable "aws_alb_target_group_arn" {
-  description = "ARN of the alb target group"
-}
+# variable "aws_alb_target_group_arn" {
+#   description = "ARN of the alb target group"
+# }
 
 variable "service_desired_count" {
   description = "Number of services running in parallel"
@@ -58,4 +58,8 @@ variable "container_secrets" {
 
 variable "whisper_incoming_audio_bucket" {
   description = "The name of the S3 bucket where incoming audio files are stored"
+}
+
+variable "whisper_outgoing_text_bucket" {
+  description = "The name of the S3 bucket where outgoing text files are stored"
 }

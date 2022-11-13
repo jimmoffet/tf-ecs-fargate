@@ -9,20 +9,18 @@ configuration.
 This setup creates the following resources:
 
 - VPC
-- One public and one private subnet per AZ
-- Routing tables for the subnets
-- Internet Gateway for public subnets
-- NAT gateways with attached Elastic IPs for the private subnet
+- One public subnet
+- Routing tables for the subnet
+- Internet Gateway for public subnet
 - Two security groups
   - one that allows HTTP/HTTPS access
   - one that allows access to the specified container port
-- An ALB + target group with listeners for port 80 and 443
 - An ECR for the docker images
 - An ECS cluster with a service (incl. auto scaling policies for CPU and memory usage)
   and task definition to run docker containers from the ECR (incl. IAM execution role)
 - Secrets - a Terraform module that creates many secrets based on a `map` input value, and has a list of secret ARNs as an output value
 
-![example](https://d2908q01vomqb2.cloudfront.net/1b6453892473a467d07372d45eb05abc2031647a/2018/01/26/Slide5.png "Infrastructure illustration")
+![example](https://d2908q01vomqb2.cloudfront.net/1b6453892473a467d07372d45eb05abc2031647a/2018/01/26/Slide2-1024x866.png "Infrastructure illustration")
 (Source: https://aws.amazon.com/de/blogs/compute/task-networking-in-aws-fargate/)
 
 ### Get Started building your own infrastructure
@@ -90,3 +88,12 @@ docker compose up --build
 https://github.com/pyannote/pyannote-audio/pull/1098
 https://colab.research.google.com/drive/12W6bR-C6NIEjAML19JubtzHPIlVxdaUq?usp=sharing
 https://github.com/openai/whisper/discussions/264
+
+lambda to fargate example
+https://gist.github.com/fermayo/02b0f69cd942115f8c70e6802516f368
+run_task doc
+https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html
+more run_task examples
+https://hands-on.cloud/working-with-ecs-in-python-using-boto3/
+
+`# aws ecs execute-command --region us-west-2 --cluster $NAME-cluster-dev --task fee34e07568e4592a6b1fc43e1ad657f --container $NAME-container-dev --command "/bin/bash" --interactive`

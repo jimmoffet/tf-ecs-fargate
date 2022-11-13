@@ -2,3 +2,4 @@ requests==2.28.1
 whisper @ git+https://github.com/openai/whisper.git
 Flask==2.0.2
 boto3==1.25.3
+filetype==1.1.0

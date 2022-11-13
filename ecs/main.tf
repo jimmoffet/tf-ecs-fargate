@@ -102,7 +102,10 @@ resource "aws_iam_policy" "dynamodb" {
              "s3:GetBucketLocation"
            ],
           "Effect": "Allow",
-          "Resource": "arn:aws:s3:::${var.whisper_incoming_audio_bucket}",
+          "Resource": [
+            "arn:aws:s3:::${var.whisper_incoming_audio_bucket}",
+            "arn:aws:s3:::${var.whisper_outgoing_text_bucket}"
+          ],
           "Sid": "S3List"
         },
         {
@@ -114,7 +117,10 @@ resource "aws_iam_policy" "dynamodb" {
             "s3:DeleteObject"
           ],
           "Effect": "Allow",
-          "Resource": "arn:aws:s3:::${var.whisper_incoming_audio_bucket}/*",
+          "Resource": [
+            "arn:aws:s3:::${var.whisper_incoming_audio_bucket}/*",
+            "arn:aws:s3:::${var.whisper_outgoing_text_bucket}/*"
+          ],
           "Sid": "S3Use"
         }
     ]
@@ -227,9 +233,9 @@ resource "aws_ecs_service" "main" {
   deployment_maximum_percent         = 200
   enable_execute_command             = true
   force_new_deployment               = true
-  health_check_grace_period_seconds  = 60
-  launch_type                        = "FARGATE"
-  scheduling_strategy                = "REPLICA"
+  # health_check_grace_period_seconds  = 60
+  launch_type         = "FARGATE"
+  scheduling_strategy = "REPLICA"
 
   network_configuration {
     security_groups  = var.ecs_service_security_groups
@@ -237,11 +243,11 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = true
   }
 
-  load_balancer {
-    target_group_arn = var.aws_alb_target_group_arn
-    container_name   = "${var.name}-container-${var.environment}"
-    container_port   = var.container_port
-  }
+  # load_balancer {
+  #   target_group_arn = var.aws_alb_target_group_arn
+  #   container_name   = "${var.name}-container-${var.environment}"
+  #   container_port   = var.container_port
+  # }
 
   # we ignore task_definition changes as the revision changes on deploy
   # of a new version of the application

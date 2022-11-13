@@ -8,5 +8,6 @@ container_memory              = "4GB"
 container_cpu                 = 2048
 container_port                = 80
 whisper_incoming_audio_bucket = "whisper-incoming-audio-bucket"
+whisper_outgoing_text_bucket  = "whisper-outgoing-text-bucket"
 health_check_path             = "/"
 service_desired_count         = 0

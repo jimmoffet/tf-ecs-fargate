@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "aws" {
-  access_key = var.aws-access-key
-  secret_key = var.aws-secret-key
+  access_key = var.local-tf-deployer-aws-access-key
+  secret_key = var.local-tf-deployer-aws-secret-key
   region     = var.aws-region
 }
 
@@ -44,10 +44,10 @@ data "aws_availability_zones" "available" {
 }
 
 module "vpc" {
-  source             = "./vpc"
-  name               = var.name
-  cidr               = var.cidr
-  private_subnets    = var.private_subnets
+  source = "./vpc"
+  name   = var.name
+  cidr   = var.cidr
+  # private_subnets = var.private_subnets
   public_subnets     = var.public_subnets
   availability_zones = data.aws_availability_zones.available.names[0]
   environment        = var.environment
@@ -61,16 +61,16 @@ module "security_groups" {
   container_port = var.container_port
 }
 
-module "alb" {
-  source              = "./alb"
-  name                = var.name
-  vpc_id              = module.vpc.id
-  subnets             = module.vpc.public_subnets
-  environment         = var.environment
-  alb_security_groups = [module.security_groups.alb]
-  alb_tls_cert_arn    = var.tsl_certificate_arn
-  health_check_path   = var.health_check_path
-}
+# module "alb" {
+#   source              = "./alb"
+#   name                = var.name
+#   vpc_id              = module.vpc.id
+#   subnets             = module.vpc.public_subnets
+#   environment         = var.environment
+#   alb_security_groups = [module.security_groups.alb]
+#   alb_tls_cert_arn    = var.tsl_certificate_arn
+#   health_check_path   = var.health_check_path
+# }
 
 module "ecr" {
   source      = "./ecr"
@@ -93,12 +93,13 @@ module "my-container-image" {
 }
 
 module "ecs" {
-  source                        = "./ecs"
-  name                          = var.name
-  environment                   = var.environment
-  region                        = var.aws-region
-  subnets                       = module.vpc.private_subnets
-  aws_alb_target_group_arn      = module.alb.aws_alb_target_group_arn
+  source      = "./ecs"
+  name        = var.name
+  environment = var.environment
+  region      = var.aws-region
+  # subnets     = module.vpc.private_subnets
+  subnets = module.vpc.public_subnets
+  # aws_alb_target_group_arn      = module.alb.aws_alb_target_group_arn
   ecs_service_security_groups   = [module.security_groups.ecs_tasks]
   my_container_image            = "${module.my-container-image.repository_url}:${module.my-container-image.tag}"
   container_port                = var.container_port
@@ -106,11 +107,24 @@ module "ecs" {
   container_memory              = var.container_memory
   service_desired_count         = var.service_desired_count
   whisper_incoming_audio_bucket = var.whisper_incoming_audio_bucket
+  whisper_outgoing_text_bucket  = var.whisper_outgoing_text_bucket
   container_environment = [
     { name = "LOG_LEVEL",
     value = "DEBUG" },
     { name = "PORT",
-    value = var.container_port }
+    value = var.container_port },
+    { name = "WHISPER_INCOMING_AUDIO_BUCKET",
+    value = var.whisper_incoming_audio_bucket },
+    { name = "WHISPER_OUTGOING_TEXT_BUCKET",
+    value = var.whisper_outgoing_text_bucket },
+    { name = "ENV_NAME",
+    value = var.environment },
+    { name = "AWS_ACCESS_KEY_ID",
+    value = var.s3-only-aws-access-key },
+    { name = "AWS_SECRET_ACCESS_KEY",
+    value = var.s3-only-aws-secret-key },
+    { name = "AWS_DEFAULT_REGION",
+    value = var.aws-region }
   ]
   container_secrets = module.secrets.secrets_map
   # container_secrets_arns = module.secrets.application_secrets_arn
@@ -119,6 +133,7 @@ module "ecs" {
 module "s3" {
   source                        = "./s3"
   whisper_incoming_audio_bucket = var.whisper_incoming_audio_bucket
+  whisper_outgoing_text_bucket  = var.whisper_outgoing_text_bucket
   environment                   = var.environment
 }
 

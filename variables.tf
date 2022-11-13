@@ -18,11 +18,19 @@ variable "aws-region" {
   default     = "us-west-2"
 }
 
-variable "aws-access-key" {
+variable "s3-only-aws-access-key" {
   type = string
 }
 
-variable "aws-secret-key" {
+variable "s3-only-aws-secret-key" {
+  type = string
+}
+
+variable "local-tf-deployer-aws-access-key" {
+  type = string
+}
+
+variable "local-tf-deployer-aws-secret-key" {
   type = string
 }
 
@@ -83,4 +91,8 @@ variable "tsl_certificate_arn" {
 
 variable "whisper_incoming_audio_bucket" {
   description = "The name of the S3 bucket where incoming audio files are stored"
+}
+
+variable "whisper_outgoing_text_bucket" {
+  description = "The name of the S3 bucket where outgoing text files are stored"
 }
