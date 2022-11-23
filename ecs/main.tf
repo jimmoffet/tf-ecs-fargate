@@ -44,9 +44,9 @@ resource "aws_iam_role" "ecs_task_role" {
 EOF
 }
 
-resource "aws_iam_policy" "dynamodb" {
-  name        = "${var.name}-task-policy-dynamodb"
-  description = "Policy that allows access to DynamoDB"
+resource "aws_iam_policy" "logging" {
+  name        = "${var.name}-task-policy-logging"
+  description = "Policy that allows access to EC2 and Cloudwatch for logging"
 
   policy = <<EOF
 {
@@ -55,17 +55,6 @@ resource "aws_iam_policy" "dynamodb" {
         {
             "Effect": "Allow",
             "Action": [
-                "dynamodb:CreateTable",
-                "dynamodb:UpdateTimeToLive",
-                "dynamodb:PutItem",
-                "dynamodb:DescribeTable",
-                "dynamodb:ListTables",
-                "dynamodb:DeleteItem",
-                "dynamodb:GetItem",
-                "dynamodb:Scan",
-                "dynamodb:Query",
-                "dynamodb:UpdateItem",
-                "dynamodb:UpdateTable",
                 "cloudwatch:GetMetricStatistics",
                 "cloudwatch:ListMetrics",
                 "cloudwatch:PutMetricData",
@@ -156,9 +145,9 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "ecs-task-role-dynamo-policy-attachment" {
+resource "aws_iam_role_policy_attachment" "ecs-task-role-logging-policy-attachment" {
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.dynamodb.arn
+  policy_arn = aws_iam_policy.logging.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment-for-secrets" {
@@ -204,7 +193,7 @@ resource "aws_ecs_task_definition" "main" {
         awslogs-region        = var.region
       }
     }
-    secrets = var.container_secrets
+    secrets = "${var.container_secrets}"
   }])
 
   tags = {
@@ -242,19 +231,6 @@ resource "aws_ecs_service" "main" {
     subnets          = var.subnets.*.id
     assign_public_ip = true
   }
-
-  # load_balancer {
-  #   target_group_arn = var.aws_alb_target_group_arn
-  #   container_name   = "${var.name}-container-${var.environment}"
-  #   container_port   = var.container_port
-  # }
-
-  # we ignore task_definition changes as the revision changes on deploy
-  # of a new version of the application
-  # desired_count is ignored as it can change due to autoscaling policy
-  # lifecycle {
-  #   ignore_changes = [task_definition, desired_count]
-  # }
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {
@@ -300,4 +276,12 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
   }
+}
+
+output "cluster_arn" {
+  value = aws_ecs_cluster.main.arn
+}
+
+output "task_definition_arn" {
+  value = aws_ecs_task_definition.main.arn
 }

@@ -1,11 +1,11 @@
-name                          = "src-fargate-demo"
-environment                   = "dev"
-availability_zones            = []
-private_subnets               = ["10.0.0.0/20", "10.0.32.0/20"]
+name               = "src-fargate-demo"
+environment        = "dev"
+availability_zones = ["us-west-2b"]
+# private_subnets               = ["10.0.0.0/20", "10.0.32.0/20"]
 public_subnets                = ["10.0.16.0/20", "10.0.48.0/20"]
 tsl_certificate_arn           = "mycertificatearn"
-container_memory              = "4GB"
-container_cpu                 = 2048
+container_memory              = "4096"
+container_cpu                 = 1024
 container_port                = 80
 whisper_incoming_audio_bucket = "whisper-incoming-audio-bucket"
 whisper_outgoing_text_bucket  = "whisper-outgoing-text-bucket"

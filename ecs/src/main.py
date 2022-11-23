@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import requests
 import os
 import logging
 import sys
@@ -23,7 +24,7 @@ WHISPER_OUTGOING_TEXT_BUCKET = os.getenv(
 ENV_NAME = os.getenv("ENV_NAME", "you-forget-to-set-env-name-env")
 
 
-def transcribe(url, job_id, whisper_model="base.en"):
+def transcribe(url, whisper_model="base.en"):
     """Transcribe audio file from url
     base.en is the default model, ~300mb
     small.en is a somewhat larger model, ~1gb
@@ -52,10 +53,29 @@ def transcribe(url, job_id, whisper_model="base.en"):
         logger.info(f"input filename is now: {input_filename}")
     # TODO: probably abort if filetype is not found
 
+    # Validate Required Environment Variable and get Metadata
+    if (
+        ECS_CONTAINER_METADATA_URI_V4 := os.getenv("ECS_CONTAINER_METADATA_URI_V4")
+    ) is None:
+        logger.error(
+            "Environment Variable ECS_CONTAINER_METADATA_URI_V4 not set", fatal=True
+        )
+    try:
+        r = requests.get(ECS_CONTAINER_METADATA_URI_V4 + "/task")
+        metadata = r.json()
+    except Exception as e:
+        logger.error("failed to parse metadata response with error: {e}", fatal=True)
+
+    task_arn = metadata["TaskARN"]
+    # ARN is "arn:partition:service:region", so we need 4th element, i.e. 3 zero-indexed
+    task_id = task_arn.split("/")[-1]
+    region = task_arn.split(":")[3]
+    ecs_cluster = metadata["Cluster"]
+
     upload_file_s3(
         input_filename,
         WHISPER_INCOMING_AUDIO_BUCKET,
-        object_name=ENV_NAME + "/" + job_id + "." + filetype,
+        object_name=ENV_NAME + "/" + task_id + "." + filetype,
     )
 
     model_file = whisper_model + ".pickle"
@@ -70,32 +90,35 @@ def transcribe(url, job_id, whisper_model="base.en"):
         model = pickle.load(handle)
 
     result = model.transcribe(input_filename)
-    logger.debug(f"dict result is {result}")
+    logger.info(f"dict result is {result}")
 
     output_filename = "output.txt"
     text_file = open(output_filename, "w")
     output_str = ""
     for segment in result["segments"]:
-        logger.debug(f"saving a segment to output file")
+        logger.info(f"saving a segment to output file")
         output_str += segment["text"] + "\n>"
     text_file.write(output_str)
-    logger.debug(f"wrote output file")
+    logger.info(f"wrote output file")
     text_file.close()
 
     upload_file_s3(
         output_filename,
         WHISPER_OUTGOING_TEXT_BUCKET,
-        object_name=ENV_NAME + "/" + job_id + ".txt",
+        object_name=ENV_NAME + "/" + task_id + ".txt",
     )
-
-    # we'll need an input lambda to receive a POST with audio url, which will send the audio url and a unique id to the fargate task, fargate creates the txt file with the id, lambda returns the id to the requester. The requester can then poll the lambda with the id to get the txt file once it becomes available. Fargate could write an error to the beginning of the file if it fails, and the lambda could check for that and return an error to the requester.
 
     return json.dumps(result, indent=4)
 
 
 logger.info(f"port is: {PORT}")
 if __name__ == "__main__":
-    result_json = transcribe(sys.argv[1], sys.argv[2], whisper_model="base.en")
-    logger.debug(f"{result_json}\n")
-    result_dict = json.loads(result_json)
-    logger.info(f'{result_dict["text"]}')
+    try:
+        result_json = transcribe(sys.argv[1], whisper_model="base.en")
+        logger.debug(f"{result_json}\n")
+        result_dict = json.loads(result_json)
+        logger.info(f'{result_dict["text"]}')
+    except Exception as e:
+        logger.error(f"Main error: {e}")
+        # make sure container always exits cleanly, else fargate will retry forever
+        pass
