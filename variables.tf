@@ -18,10 +18,6 @@ variable "aws-region" {
   default     = "us-west-2"
 }
 
-variable "s3-only-aws-access-key" {
-  type = string
-}
-
 variable "s3-only-aws-secret-key" {
   type = string
 }

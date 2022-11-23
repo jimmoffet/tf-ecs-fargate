@@ -97,10 +97,6 @@ module "ecs" {
     value = var.whisper_outgoing_text_bucket },
     { name = "ENV_NAME",
     value = var.environment },
-    # { name = "AWS_ACCESS_KEY_ID",
-    # value = var.s3-only-aws-access-key },
-    # { name = "AWS_SECRET_ACCESS_KEY",
-    # value = var.s3-only-aws-secret-key },
     { name = "AWS_DEFAULT_REGION",
     value = var.aws-region }
   ]
