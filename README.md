@@ -92,7 +92,7 @@ https://github.com/openai/whisper/discussions/264
 lambda to fargate example
 https://gist.github.com/fermayo/02b0f69cd942115f8c70e6802516f368
 run_task doc
-https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html
+https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task
 more run_task examples
 https://hands-on.cloud/working-with-ecs-in-python-using-boto3/
 
